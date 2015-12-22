@@ -5,7 +5,7 @@ use std::time;
 
 // struct to hold the global variables
 struct VarStruct {
-    run_time: i32,
+    run_time: u64,
     program: String,
     program_args: Vec<String>,
 }
@@ -25,7 +25,7 @@ fn load_vars() -> Option<VarStruct> {
     // make sure we have the right # of cmd line args
     if check_cmd_args() == true {
         let num_args = env::args().count();
-        let run_time: i32 = env::args()
+        let run_time: u64 = env::args()
                                 .nth(1)
                                 .unwrap()
                                 .parse()
@@ -77,9 +77,10 @@ fn main() {
                         .spawn()
                         .unwrap_or_else(|e| panic!("failed to execute child: {}", e));
 
+    // now sleep the right amount of time
+    thread::sleep(time::Duration::new(vars.run_time, 0));
 
-    // join child back
-    let ecode = child.wait()
-                     .unwrap_or_else(|e| panic!("failed to wait on child: {}", e));
-    assert!(ecode.success());
+    // kill the child
+    let ecode = child.kill().unwrap_or_else(|e| panic!("couldn't kill child: {}", e));
+    assert!(ecode == ());
 }
